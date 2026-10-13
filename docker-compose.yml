@@ -1,0 +1,22 @@
+services:
+  db:
+    image: postgres:16
+    container_name: hn_etl_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-etl_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-etl_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-hn_etl}
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./sql:/sql:ro      # run scripts with: psql -f /sql/<file>.sql
+      - ./data:/data:ro    # raw JSON files for loading
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-etl_user} -d ${POSTGRES_DB:-hn_etl}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:
